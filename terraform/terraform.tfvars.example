@@ -1,0 +1,45 @@
+# =============================================================================
+# CAN Streaming Demo - Configuration
+# =============================================================================
+# Copy this file to terraform.tfvars and fill in your values:
+#   cp terraform.tfvars.example terraform.tfvars
+# =============================================================================
+
+# --- AWS ---
+aws_region  = "us-west-2"
+aws_profile = "default"                    # AWS CLI profile name
+
+# --- Networking (existing VPC) ---
+vpc_id    = "vpc-xxxxxxxxx"                # Your VPC ID
+subnet_id = "subnet-xxxxxxxxx"             # Public subnet for EC2
+
+# --- Access Control ---
+admin_cidr_blocks = ["YOUR_IP/32"]         # Your IP for psql + dashboard access
+                                           # Find your IP: curl https://checkip.amazonaws.com
+
+# --- EC2 (RisingWave) ---
+ec2_instance_type = "t3.medium"            # t3.medium (4GB RAM) is minimum for RisingWave
+# ec2_ami_id      = ""                     # Leave empty for latest Ubuntu 24.04
+
+# --- Kinesis ---
+kinesis_stream_name = "can-data-stream"
+kinesis_shard_count = 1                    # 1 shard for demo, 10+ for production
+
+# --- S3 ---
+s3_bucket_prefix = "can-streaming-demo"    # Bucket name: {prefix}-{account_id}
+
+# --- Databricks ---
+databricks_host  = "https://xxxxx.cloud.databricks.com"
+databricks_token = ""                      # Or set DATABRICKS_TOKEN env var
+
+# Existing IAM role ARN used by Databricks for Unity Catalog S3 access.
+# Find in: Databricks UI > Catalog > External Data > Storage Credentials
+databricks_uc_iam_role_arn = "arn:aws:iam::ACCOUNT_ID:role/ROLE_NAME"
+
+# Name of the existing Storage Credential in Databricks.
+# Find in: Databricks UI > Catalog > External Data > Storage Credentials
+databricks_storage_credential_name = "YOUR_STORAGE_CREDENTIAL_NAME"
+
+# --- Unity Catalog ---
+uc_catalog_name = "can_streaming"
+uc_schema_name  = "vehicle_streaming"

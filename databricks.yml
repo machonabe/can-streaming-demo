@@ -1,0 +1,33 @@
+bundle:
+  name: can-streaming-demo
+
+variables:
+  uc_catalog:
+    description: "Unity Catalog catalog name (from terraform output uc_catalog_name)"
+    default: can_streaming
+  uc_schema:
+    description: "Unity Catalog schema name (from terraform output uc_schema_name)"
+    default: vehicle_streaming
+  rw_host:
+    description: "RisingWave EC2 public IP (from terraform output ec2_public_ip)"
+  s3_bucket:
+    description: "S3 bucket name (from terraform output s3_bucket_name)"
+  kinesis_stream_name:
+    description: "Kinesis stream name (from terraform output kinesis_stream_name)"
+    default: can-data-stream
+  aws_region:
+    description: "AWS region (from terraform output aws_region)"
+    default: us-west-2
+  secrets_scope:
+    description: "Databricks secrets scope for AWS credentials (optional, uses instance profile if empty)"
+    default: ""
+
+workspace:
+  root_path: /Workspace/Users/${workspace.current_user.userName}/can-streaming-demo
+
+include:
+  - resources/*.yml
+
+targets:
+  dev:
+    default: true

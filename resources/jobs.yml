@@ -1,0 +1,79 @@
+resources:
+  jobs:
+    # --- Data Generation: CAN frames -> Kinesis ---
+    can_data_producer:
+      name: "[CAN Demo] 01 - Kinesis Producer"
+      tasks:
+        - task_key: produce_data
+          notebook_task:
+            notebook_path: ../src/01_kinesis_producer.py
+            base_parameters:
+              uc_catalog: ${var.uc_catalog}
+              uc_schema: ${var.uc_schema}
+              aws_region: ${var.aws_region}
+              kinesis_stream_name: ${var.kinesis_stream_name}
+              s3_bucket: ${var.s3_bucket}
+              rw_host: ${var.rw_host}
+              secrets_scope: ${var.secrets_scope}
+          environment_key: default_env
+      environments:
+        - environment_key: default_env
+          spec:
+            client: "1"
+            dependencies:
+              - boto3
+              - faker
+
+    # --- Batch Ingestion: RisingWave -> UC Managed Iceberg ---
+    rw_to_uc_ingestion:
+      name: "[CAN Demo] Batch Ingestion - RW to UC"
+      tasks:
+        - task_key: ingest
+          notebook_task:
+            notebook_path: ../src/rw_to_uc_ingestion.py
+            base_parameters:
+              uc_catalog: ${var.uc_catalog}
+              uc_schema: ${var.uc_schema}
+              rw_host: ${var.rw_host}
+          environment_key: default_env
+      environments:
+        - environment_key: default_env
+          spec:
+            client: "1"
+            dependencies:
+              - psycopg2-binary
+
+    # --- Analysis ---
+    analysis:
+      name: "[CAN Demo] 03 - UC Catalog Analysis"
+      tasks:
+        - task_key: analyze
+          notebook_task:
+            notebook_path: ../src/03_databricks_catalog.py
+            base_parameters:
+              uc_catalog: ${var.uc_catalog}
+              uc_schema: ${var.uc_schema}
+          environment_key: default_env
+      environments:
+        - environment_key: default_env
+          spec:
+            client: "1"
+
+    # --- Monitoring ---
+    monitoring:
+      name: "[CAN Demo] 04 - Pipeline Monitoring"
+      tasks:
+        - task_key: monitor
+          notebook_task:
+            notebook_path: ../src/04_monitoring.py
+            base_parameters:
+              uc_catalog: ${var.uc_catalog}
+              uc_schema: ${var.uc_schema}
+              rw_host: ${var.rw_host}
+              s3_bucket: ${var.s3_bucket}
+              kinesis_stream_name: ${var.kinesis_stream_name}
+          environment_key: default_env
+      environments:
+        - environment_key: default_env
+          spec:
+            client: "1"
