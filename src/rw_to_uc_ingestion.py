@@ -45,9 +45,7 @@ cur = conn.cursor()
 
 cur.execute("""
     SELECT ts_ms, sensor_type, speed_kmh, rpm, fuel_pct,
-           latitude, longitude,
-           encode(substring(payload from 12 for 8), 'hex') as accel_hex,
-           encode(substring(payload from 12 for 8), 'hex') as battery_hex
+           latitude, longitude, data_hex
     FROM can_frames_decoded
 """)
 rows = cur.fetchall()
@@ -66,8 +64,7 @@ schema_raw = StructType([
     StructField("fuel_pct", StringType(), True),
     StructField("latitude", StringType(), True),
     StructField("longitude", StringType(), True),
-    StructField("accel_hex", StringType(), True),
-    StructField("battery_hex", StringType(), True),
+    StructField("data_hex", StringType(), True),
 ])
 
 df_raw = spark.createDataFrame(rows, schema=schema_raw)
@@ -109,9 +106,9 @@ df_fuel = (df_numbered.filter("sensor_type = 'FUEL'")
 df_gps = (df_numbered.filter("sensor_type = 'GPS'")
     .select(col("rn"), col("latitude"), col("longitude")))
 df_accel = (df_numbered.filter("sensor_type = 'ACCEL'")
-    .select(col("rn"), col("accel_hex")))
+    .select(col("rn"), col("data_hex").alias("accel_hex")))
 df_battery = (df_numbered.filter("sensor_type = 'BATTERY'")
-    .select(col("rn"), col("battery_hex")))
+    .select(col("rn"), col("data_hex").alias("battery_hex")))
 
 # Join all sensors on row number
 df_pivoted = (df_speed

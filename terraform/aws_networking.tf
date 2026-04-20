@@ -21,13 +21,25 @@ resource "aws_security_group" "risingwave" {
   description = "RisingWave EC2 - psql + dashboard + egress"
   vpc_id      = var.vpc_id
 
-  # psql (PostgreSQL wire protocol)
+  # psql (PostgreSQL wire protocol) — admin access
   ingress {
     description = "RisingWave psql"
     from_port   = 4566
     to_port     = 4566
     protocol    = "tcp"
     cidr_blocks = var.admin_cidr_blocks
+  }
+
+  # psql — Databricks notebook access (via workspace NAT gateway)
+  dynamic "ingress" {
+    for_each = length(var.databricks_nat_cidr_blocks) > 0 ? [1] : []
+    content {
+      description = "RisingWave psql - Databricks NAT"
+      from_port   = 4566
+      to_port     = 4566
+      protocol    = "tcp"
+      cidr_blocks = var.databricks_nat_cidr_blocks
+    }
   }
 
   # Dashboard GUI

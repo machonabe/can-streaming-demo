@@ -89,8 +89,9 @@ cp terraform/terraform.tfvars.example terraform/terraform.tfvars
 Edit `terraform/terraform.tfvars` with your:
 - AWS VPC/subnet IDs
 - Your IP address (for security group access)
+- **Databricks NAT gateway IPs** (required for notebooks to connect to RisingWave — find under AWS Console > VPC > NAT Gateways, filter by your Databricks workspace VPC)
 - Databricks workspace URL and token
-- Databricks storage credential name and IAM role ARN
+- Databricks storage credential name and IAM role ARN (optional — leave empty to use metastore default storage)
 
 ### 2. Deploy infrastructure
 

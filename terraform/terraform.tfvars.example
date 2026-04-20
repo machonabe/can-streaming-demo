@@ -17,6 +17,11 @@ subnet_id = "subnet-xxxxxxxxx"             # Public subnet for EC2
 admin_cidr_blocks = ["YOUR_IP/32"]         # Your IP for psql + dashboard access
                                            # Find your IP: curl https://checkip.amazonaws.com
 
+# NAT gateway IPs of your Databricks workspace VPC (required for notebooks to reach RisingWave).
+# Find via: AWS Console > VPC > NAT Gateways, filter by your Databricks VPC, note the Elastic IP.
+# Format: ["x.x.x.x/32", "y.y.y.y/32"]
+databricks_nat_cidr_blocks = []
+
 # --- EC2 (RisingWave) ---
 ec2_instance_type = "t3.medium"            # t3.medium (4GB RAM) is minimum for RisingWave
 # ec2_ami_id      = ""                     # Leave empty for latest Ubuntu 24.04

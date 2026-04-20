@@ -33,6 +33,12 @@ variable "admin_cidr_blocks" {
   type        = list(string)
 }
 
+variable "databricks_nat_cidr_blocks" {
+  description = "NAT gateway IPs of the Databricks workspace VPC (for notebook access to RisingWave on port 4566). Find via: AWS Console > VPC > NAT Gateways, filter by Databricks VPC."
+  type        = list(string)
+  default     = []
+}
+
 # =============================================================================
 # EC2 (RisingWave)
 # =============================================================================
