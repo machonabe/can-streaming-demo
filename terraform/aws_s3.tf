@@ -17,8 +17,9 @@ resource "aws_s3_bucket_versioning" "demo" {
   }
 }
 
-# Bucket policy: allow EC2 role + Databricks UC IAM role
+# Bucket policy: allow Databricks UC IAM role (only if provided)
 resource "aws_s3_bucket_policy" "demo" {
+  count  = var.databricks_uc_iam_role_arn != "" ? 1 : 0
   bucket = aws_s3_bucket.demo.id
 
   policy = jsonencode({

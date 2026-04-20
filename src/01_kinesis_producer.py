@@ -147,6 +147,8 @@ kinesis_kwargs = {"region_name": config["aws_region"]}
 if aws_access_key and aws_secret_key:
     kinesis_kwargs["aws_access_key_id"] = aws_access_key
     kinesis_kwargs["aws_secret_access_key"] = aws_secret_key
+    if aws_session_token:
+        kinesis_kwargs["aws_session_token"] = aws_session_token
 
 kinesis = boto3.client("kinesis", **kinesis_kwargs)
 

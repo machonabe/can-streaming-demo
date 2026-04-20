@@ -5,7 +5,8 @@
 
 -- 1. Kinesis Source
 CREATE SOURCE IF NOT EXISTS kinesis_can_source (
-    payload BYTEA
+    payload BYTEA,
+    processed_at TIMESTAMPTZ AS proctime()
 )
 WITH (
     connector = 'kinesis',
@@ -94,7 +95,7 @@ SELECT
 
     to_hex(get_byte(payload, 19)) AS crc_hex,
 
-    NOW() AS processed_at
+    processed_at
 
 FROM kinesis_can_source;
 

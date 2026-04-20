@@ -27,5 +27,5 @@ provider "aws" {
 
 provider "databricks" {
   host  = var.databricks_host
-  token = var.databricks_token
+  token = var.databricks_token != "" ? var.databricks_token : null
 }

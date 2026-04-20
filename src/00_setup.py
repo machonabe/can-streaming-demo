@@ -95,12 +95,18 @@ print(f"Default catalog/schema set to: {DB}")
 
 aws_access_key = None
 aws_secret_key = None
+aws_session_token = None
 
 if config["secrets_scope"]:
     try:
         aws_access_key = dbutils.secrets.get(config["secrets_scope"], "aws-access-key")
         aws_secret_key = dbutils.secrets.get(config["secrets_scope"], "aws-secret-key")
         print(f"AWS credentials loaded from Databricks Secrets scope: {config['secrets_scope']}")
+        try:
+            aws_session_token = dbutils.secrets.get(config["secrets_scope"], "aws-session-token")
+            print("  Session token also loaded (temporary credentials)")
+        except Exception:
+            pass  # Session token is optional (not needed for IAM user keys)
     except Exception as e:
         print(f"WARNING: Failed to load from Secrets scope '{config['secrets_scope']}': {e}")
         print("  Falling back to cluster IAM role / Instance Profile")

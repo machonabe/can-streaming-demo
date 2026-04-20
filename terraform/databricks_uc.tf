@@ -2,10 +2,9 @@
 # Databricks: Unity Catalog resources
 # =============================================================================
 
-# Catalog with storage_root on the customer's S3 bucket
+# Catalog (uses metastore default managed storage)
 resource "databricks_catalog" "demo" {
   name           = var.uc_catalog_name
-  storage_root   = "s3://${aws_s3_bucket.demo.id}/uc_managed/"
   isolation_mode = "OPEN"
   comment        = "CAN Streaming Demo - Managed Iceberg tables"
 }
@@ -18,16 +17,11 @@ resource "databricks_schema" "demo" {
 }
 
 # External location for reading RisingWave Iceberg output on S3
+# Only created when a valid storage credential is provided
 resource "databricks_external_location" "iceberg" {
+  count           = var.databricks_storage_credential_name != "" ? 1 : 0
   name            = "${var.uc_catalog_name}-iceberg"
-  credential_name = data.databricks_storage_credential.existing.name
+  credential_name = var.databricks_storage_credential_name
   url             = "s3://${aws_s3_bucket.demo.id}/iceberg/"
   comment         = "RisingWave Iceberg sink output"
-
-  depends_on = [aws_s3_bucket_policy.demo]
-}
-
-# Look up the existing storage credential by IAM role ARN
-data "databricks_storage_credential" "existing" {
-  name = var.databricks_storage_credential_name
 }
