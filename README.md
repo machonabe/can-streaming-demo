@@ -145,6 +145,55 @@ eval $(terraform -chdir=terraform output -raw risingwave_psql_command)
 make destroy
 ```
 
+## Notes
+
+### Multiple deployments in the same AWS account / region
+
+Terraform creates IAM resources with fixed names (e.g., `risingwave-ec2-us-west-2`). If you need to run multiple instances of this demo in the same AWS account and region, change `uc_catalog_name` to a unique value and either `terraform destroy` the previous deployment first or manually rename the IAM resources in `terraform/aws_iam.tf`.
+
+### AWS credentials for the Kinesis Producer notebook
+
+The `01_kinesis_producer` notebook needs AWS credentials to write to Kinesis. There are two options:
+
+1. **Instance Profile (no extra config)** — If your Databricks workspace is configured with an instance profile that has `kinesis:PutRecord` and `kinesis:PutRecords` permissions, no extra setup is needed. Leave `secrets_scope` empty.
+
+2. **Databricks Secrets** — If your workspace doesn't have a Kinesis-capable instance profile, create a secret scope and store your AWS credentials:
+
+   ```bash
+   databricks secrets create-scope <SCOPE_NAME>
+   databricks secrets put-secret <SCOPE_NAME> aws-access-key --string-value "<YOUR_ACCESS_KEY>"
+   databricks secrets put-secret <SCOPE_NAME> aws-secret-key --string-value "<YOUR_SECRET_KEY>"
+   # For temporary credentials (AWS SSO / STS):
+   databricks secrets put-secret <SCOPE_NAME> aws-session-token --string-value "<YOUR_SESSION_TOKEN>"
+   ```
+
+   Then pass `secrets_scope` when deploying notebooks:
+
+   ```bash
+   databricks bundle deploy --var="secrets_scope=<SCOPE_NAME>" ...
+   ```
+
+   Or add `-var="secrets_scope=<SCOPE_NAME>"` to the `deploy-notebooks` target in the `Makefile`.
+
+### Databricks NAT gateway IPs
+
+Databricks serverless compute egresses through NAT gateways whose IPs may vary across runs. To find the correct CIDR:
+
+1. Go to **AWS Console > VPC > NAT Gateways**
+2. Filter by the VPC used by your Databricks workspace (look for VPC names containing `databricks`)
+3. Note the **Elastic IP** of each NAT gateway
+4. Add them as `/32` entries (or use a broader `/24` if IPs change frequently) in `databricks_nat_cidr_blocks` in your `terraform.tfvars`
+
+Without this, the `rw_to_uc_ingestion` and `02_risingwave_pipeline` notebooks will fail with "Connection timed out" when trying to reach RisingWave on EC2.
+
+### Running notebook 02 interactively
+
+`02_risingwave_pipeline.py` requires `psycopg2-binary`. When running it interactively (not via DAB job), add `%pip install psycopg2-binary` at the top of the notebook, or install it on your cluster.
+
+### Simulated GPS data
+
+The Kinesis Producer generates GPS coordinates centered around Tokyo (35.681N, 139.767E). This is hardcoded demo data and does not affect pipeline functionality.
+
 ## Project Structure
 
 ```
